@@ -1,0 +1,16 @@
+{% block title %}Upload{% endblock %}{% block main %}
+         <h1>Upload an image</h1>
+         <hr>
+         <form action="/upload-image" method="POST" enctype="multipart/form-data">
+               <label>Select image</label>
+                  <input type="file" class="custom-file-input" name="image" id="image">
+                  <label class="custom-file-label" for="image">Select image...</label>
+            <button type="submit" class="btn btn-primary">Upload</button>
+
+            <form action="/api"><input type="submit" value="Visit Website"/>
+</form>
+         
+	 
+{% endblock %}
+
+
