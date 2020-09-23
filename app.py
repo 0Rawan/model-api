@@ -15,6 +15,9 @@ from PIL import Image
 
 ######################
 from flask import Flask, jsonify, request, render_template
+#import firebase_admin
+#from firebase_admin import credentials, firestore, initialize_app
+from flask_sqlalchemy import SQLAlchemy
 ########
 import matplotlib.pyplot as plt
 # Keras
@@ -23,7 +26,14 @@ from keras.applications.imagenet_utils import preprocess_input, decode_predictio
 from keras.models import load_model
 from keras.preprocessing import image
 
+# Initialize Firestore DB
+#cred = credentials.Certificate('key.json')
+#default_app = initialize_app(cred)
+#db = firestore.client()
+#todo_ref = db.collection('todos')
 
+#fialed because I think I should use google colud service
+ 
 def im2json(im):
     """Convert a Numpy array to JSON string"""
     imdata = pickle.dumps(im)
@@ -44,6 +54,7 @@ output = model.output
 print(output)
 
 ''''
+test on a dummy picture 
 img_path = 'pics/Screenshot from 2019-03-11 15-35-39.png'
 img = image.load_img(img_path, target_size=(96, 96))
 
@@ -73,7 +84,20 @@ from werkzeug.utils import secure_filename
 # Define a flask app
 app = Flask(__name__)
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
+app.config['SQLAALCHEMY_DATABASE_URI'] = 'sqlite:///tmp/img.db'
+db = SQLAlchemy(app)
 
+class Img (db.Model):
+    id = db.Column(db.Integer, primary_key = True)
+    img = db.Column(db.Text)
+    
+    def __init__(self,  img):
+        slef.img = img
+## 23 sep
+@app.route('/', methods=['GET', 'POST'])
+def handle_request():
+    return "Flask Server & Android are Working Successfully"
+### meduim ahmad
 @app.route("/upload-image", methods=["GET", "POST"])
 def upload_image():
     if request.method == "POST":
@@ -82,10 +106,14 @@ def upload_image():
             jstr = im2json(image)
             session['my_var'] = str(len(jstr))
 
-            print(len(jstr))                                             
+            my_img  = Img(jstr)      
+            db.session.add(my_data)
+            db.session.commit()
+                                   
             return jsonify(jstr)
     return render_template("upload.html")
 
+#  I think this is redanant
 @app.route('/api')
 def api():
    my_var = session.get('my_var', None)
