@@ -96,10 +96,8 @@ class Img (db.Model):
 ## 23 sep
 @app.route('/', methods=['GET', 'POST'])
 def handle_request():
-    #if request.method == "POST":
-    #    and_json = request.files["text/plain"] 
-    #    return str(and_json)
-    return 'error'
+    and_json = request.files["text/plain"] 
+    return str(and_json)'
 ### meduim ahmad
 @app.route("/upload-image", methods=["GET", "POST"])
 def upload_image():
