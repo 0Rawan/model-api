@@ -95,9 +95,11 @@ class Img (db.Model):
         slef.img = img
 ## 23 sep
 @app.route('/', methods=['GET', 'POST'])
-def handle_request():
-    and_json = request.files["text/plain"] 
-    return str(and_json)
+def index():
+     fil = request.form['message']
+     print(fil)
+
+     return str("it did work")
 ### meduim ahmad
 @app.route("/upload-image", methods=["GET", "POST"])
 def upload_image():
