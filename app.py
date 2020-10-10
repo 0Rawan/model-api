@@ -99,7 +99,7 @@ def index():
      fil = request.form['message']
      print(fil)
 
-     return str("it did work")
+     return str(len(fil))
 ### meduim ahmad
 @app.route("/upload-image", methods=["GET", "POST"])
 def upload_image():
