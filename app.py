@@ -1,39 +1,19 @@
-from __future__ import division, print_function
-# coding=utf-8
-import sys
 import os
-import glob
-import re
+from flask import Flask, redirect, url_for, request, render_template
+from werkzeug.utils import secure_filename
+import PIL.Image
+#import concurrent.futures
+import threading
 import numpy as np
-##################
-#import cv2
-import base64
-import json
-import pickle
-from PIL import Image
-## Sending OpenCV image in JSON ##
+import deblur
+from os import system
+UPLOAD_FOLDER = 'input/'
 
-######################
-from flask import Flask, jsonify, request, render_template
-#import firebase_admin
-#from firebase_admin import credentials, firestore, initialize_app
-from flask_sqlalchemy import SQLAlchemy
-########
-import matplotlib.pyplot as plt
-# Keras
-import keras
-from keras.applications.imagenet_utils import preprocess_input, decode_predictions
-from keras.models import load_model
-from keras.preprocessing import image
+app = Flask(__name__)
+app.secret_key = "secret key"
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+#python deblur.py --apply --file-path='input/input1.jpeg'
 
-# Initialize Firestore DB
-#cred = credentials.Certificate('key.json')
-#default_app = initialize_app(cred)
-#db = firestore.client()
-#todo_ref = db.collection('todos')
-
-#fialed because I think I should use google colud service
- 
 def im2json(im):
     """Convert a Numpy array to JSON string"""
     imdata = pickle.dumps(im)
@@ -47,85 +27,58 @@ def json2im(jstr):
     im = pickle.loads(imdata)
     return im
 
+def deblur_fun(img_path):
+    deblur.use_the_model(img_path)
 
-
-model = keras.models.load_model( 'models/gen_model3000.h5', compile=False )
-output = model.output
-print(output)
-
-''''
-test on a dummy picture 
-img_path = 'pics/Screenshot from 2019-03-11 15-35-39.png'
-img = image.load_img(img_path, target_size=(96, 96))
-
-x = image.img_to_array(img)
-x = np.expand_dims(x, axis=0)
-
-x = preprocess_input(x, mode='caffe')
-
-print('000000000000000000000000000')
-preds = model.predict(x)
-arr_ = np.squeeze(preds)
-plt.imshow(arr_)
-plt.savefig("mygraph.png")
-print('here2222222222222222222222')
-
-jstr = im2json(arr_)
-print(len(jstr))
-imj= json2im(jstr)
-plt.imshow(imj)
-plt.savefig("mygraph2.png")
-'''
-
-
-
-from flask import redirect, url_for, request, render_template, session
-from werkzeug.utils import secure_filename
-# Define a flask app
-app = Flask(__name__)
-app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
-app.config['SQLAALCHEMY_DATABASE_URI'] = 'sqlite:///tmp/img.db'
-db = SQLAlchemy(app)
-
-class Img (db.Model):
-    id = db.Column(db.Integer, primary_key = True)
-    img = db.Column(db.Text)
-    
-    def __init__(self,  img):
-        slef.img = img
-## 23 sep
 @app.route('/', methods=['GET', 'POST'])
 def index():
-     fil = request.form['message']
-     print(fil)
+     img_json = request.form['message']
+     img = json2im(img_json)
+     filename = secure_filename(img.filename)
+     input_img_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
 
-     return str(len(fil))
-### meduim ahmad
+     filename, file_extension = os.path.splitext(input_img_path)
+             
+     if file_extension == '.png':
+         rgba_image = PIL.Image.open(input_img_path)
+         rgb_image = rgba_image.convert('RGB')
+         rgb_image.save(input_img_path)
+     else:
+         img.save(input_img_path)
+             
+     system('python deblur.py --apply --file-path='+input_img_path)
+     return "it works"
+
 @app.route("/upload-image", methods=["GET", "POST"])
 def upload_image():
     if request.method == "POST":
         if request.files:
-            image = request.files["image"]
-            jstr = im2json(image)
-            session['my_var'] = str(len(jstr))
+             img = request.files["image"]
+             filename = secure_filename(img.filename)
+             input_img_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
 
-            my_img  = Img(jstr)      
-            db.session.add(my_data)
-            db.session.commit()
-                                   
-            return jsonify(jstr)
+             filename, file_extension = os.path.splitext(input_img_path)
+             
+             if file_extension == '.png':
+                 rgba_image = PIL.Image.open(input_img_path)
+                 rgb_image = rgba_image.convert('RGB')
+                 rgb_image.save(input_img_path)
+             else:
+                 img.save(input_img_path)
+             
+             system('python deblur.py --apply --file-path='+input_img_path)
+              
+             #deblur.use_the_model(UPLOAD_FOLDER)
+             #print('im here 00000000000000000000000000000000000000000000000000000000')
+             #t1 = threading.Thread(target= deblur_fun, args=[input_img_path])
+             #t1.start()
+             #t1.join()
+             return str('bbom')
     return render_template("upload.html")
+    
 
-#  I think this is redanant
-@app.route('/api')
-def api():
-   my_var = session.get('my_var', None)
-   return jsonify({'output' : my_var})
 
 if __name__ == '__main__':
-    app.run(debug=True)
-
-
-
-
+   # app.run(debug=True) heroku
+   app.run(host="0.0.0.0", port=5000, debug=True) #local host
 
