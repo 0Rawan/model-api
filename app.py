@@ -32,21 +32,11 @@ def deblur_fun(img_path):
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-     img_json = request.form['message']
-     img = json2im(img_json)
-     filename = secure_filename(img.filename)
-     input_img_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+       fil = request.form['message']
+     print(fil)
 
-     filename, file_extension = os.path.splitext(input_img_path)
-             
-     if file_extension == '.png':
-         rgba_image = PIL.Image.open(input_img_path)
-         rgb_image = rgba_image.convert('RGB')
-         rgb_image.save(input_img_path)
-     else:
-         img.save(input_img_path)
-             
-     system('python deblur.py --apply --file-path='+input_img_path)
+     return str("it did work")
+     return str(len(fil))
      return "it works"
 
 @app.route("/upload-image", methods=["GET", "POST"])
