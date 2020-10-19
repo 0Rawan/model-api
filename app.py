@@ -32,7 +32,7 @@ def deblur_fun(img_path):
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-       fil = request.form['message']
+     fil = request.form['message']
      print(fil)
 
      return str("it did work")
